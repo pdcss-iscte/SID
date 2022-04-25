@@ -1,3 +1,5 @@
+package deprecated;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
 import org.bson.Document;
@@ -43,7 +45,8 @@ public class Connector {
                 while (it.hasNext()) {
                     Document temp = (Document) it.next();
                     System.out.println(temp.toString());
-                    collectionlocal.insertOne(temp);
+                    //collectionlocal.insertOne(temp);
+                    break;
                 }
 
             }

@@ -1,5 +1,9 @@
 import com.mongodb.*;
-import org.bson.Document;
+import com.mongodb.util.JSON;
+import connectors.SQLConCLoud;
+import connectors.SQLConLocal;
+import logic.Util;
+import org.json.JSONObject;
 
 import java.time.Instant;
 
@@ -25,6 +29,7 @@ public class DataBridge extends Thread{
     public void run() {
         while(i<10){
             transfer();
+
             i +=elapseTime;
             try {
                 sleep(elapseTime*1000);
@@ -35,15 +40,15 @@ public class DataBridge extends Thread{
     }
 
     public void transfer(){
-        //instant = Util.getTime();
-        instant = Instant.parse("2022-04-04T23:54:2"+i+"Z");
+        //instant = logic.Util.getTime();
+        instant = Instant.parse("2022-04-19T15:08:1"+i+"Z");
 
         MongoClient client = new MongoClient(new MongoClientURI(cloud) );
             DB database = client.getDB("sid2022");
             DBCollection collection = database.getCollection("medicoes");
 
             BasicDBObject getQuery = new BasicDBObject();
-            //getQuery.put("Data", new BasicDBObject("$lt",Util.getTimeToString(Util.getTimeMinus(instant,elapseTime))).append("$gt", "2022-04-04T23:54:35Z"));
+            //getQuery.put("Data", new BasicDBObject("$lt",logic.Util.getTimeToString(logic.Util.getTimeMinus(instant,elapseTime))).append("$gt", "2022-04-04T23:54:35Z"));
             getQuery.put("Data", new BasicDBObject("$gte",Util.getTimeToString(Util.getTimeMinus(instant,elapseTime))).append("$lt", Util.getTimeToString(instant)));
         try {
             sleep(1000);
@@ -55,11 +60,23 @@ public class DataBridge extends Thread{
         try(MongoClient localClient = new MongoClient(new MongoClientURI(local));){
             DB localDatabase = localClient.getDB("stove");
             DBCollection localColection = localDatabase.getCollection("temp");
+            DBCollection errorCollection = localDatabase.getCollection("error");
+                System.out.println("entrei");
             while(cursor.hasNext()) {
                 DBObject temp = cursor.next();
-                //add to local db
-                localColection.insert(temp);
-                System.out.println(temp);
+
+
+                if(Util.isValid(temp)){
+                    localColection.insert(temp);
+                    JSONObject output = new JSONObject(JSON.serialize(temp));
+                    SQLConLocal con = new SQLConLocal("jdbc:mysql://127.0.0.1", "admin", "admin");
+                    con.insertIntoDB(output);
+                    System.out.println("Inserted into Temp: " +temp.toString());
+
+                }else{
+                    System.err.println("Inserted into Error: "+ temp.toString());
+                    errorCollection.insert(temp);
+                }
             }
 
 
@@ -67,6 +84,8 @@ public class DataBridge extends Thread{
             lastInstant = instant;
 
     }
+
+
 
     public static void main(String[] args) {
         DataBridge db = new DataBridge();

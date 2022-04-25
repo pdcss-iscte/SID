@@ -1,3 +1,5 @@
+package logic;
+
 public class Sensor {
 
     private Zone zona;
@@ -31,7 +33,7 @@ public class Sensor {
 
     @Override
     public String toString() {
-        return "Sensor{" +
+        return "logic.Sensor{" +
                 "zona=" + zona +
                 ", infLimit=" + infLimit +
                 ", upperLimit=" + upperLimit +

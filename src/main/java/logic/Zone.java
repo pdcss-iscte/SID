@@ -1,3 +1,5 @@
+package logic;
+
 public class Zone {
     private int id;
     private double temperatura;
@@ -29,7 +31,7 @@ public class Zone {
 
     @Override
     public String toString() {
-        return "Zone{" +
+        return "logic.Zone{" +
                 "id=" + id +
                 ", temperatura=" + temperatura +
                 ", humidade=" + humidade +

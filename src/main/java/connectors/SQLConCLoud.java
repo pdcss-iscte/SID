@@ -1,25 +1,26 @@
-import java.sql.*;
+package connectors;
+
+import logic.Sensor;
+import logic.Zone;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SQLConnector {
 
-    private String sqlConnectionUrl = "jdbc:mysql://194.210.86.10";
-    private String username = "aluno";
-    private String password = "aluno";
+public class SQLConCLoud extends SQLCon {
 
 
 
-    public Connection getConnection(){
-        Connection connection = null;
-        try{
-            connection = DriverManager.getConnection(sqlConnectionUrl,username,password);
-            System.out.println("Connection successfull");
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return connection;
+
+    public SQLConCLoud() {
+        super("jdbc:mysql://194.210.86.10",  "aluno",  "aluno");
+
     }
+
 
     public List<Zone> getZones(){
         List<Zone> zones = new ArrayList<>();
@@ -77,7 +78,48 @@ public class SQLConnector {
                 break;
             }
         }
+        if(temp == null) throw new IllegalArgumentException("logic.Zone doesn't exist");
         return temp;
     }
 
+
+    public boolean isSensorPresent(String id){
+        Connection connection = getConnection();
+        int idsensor = Integer.parseInt(String.valueOf(id.charAt(13)));
+        char tipo = id.charAt(12);
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT COUNT(1) from sid2022.sensor where idsensor ="+ idsensor+" and tipo = '"+tipo+"'");
+
+            resultSet.next();
+            if(resultSet.getInt(1) == 1)
+                return true;
+            else
+                return false;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return false;
+    }
+
+
+    public boolean isZonePresent( String id){
+        Connection connection = getConnection();
+        int idzona = Integer.parseInt(String.valueOf(id.charAt(11)));
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT COUNT(1) from sid2022.zona where idzona ="+idzona);
+
+            resultSet.next();
+            if(resultSet.getInt(1) == 1)
+                return true;
+            else
+                return false;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+
+        return false;
+    }
 }

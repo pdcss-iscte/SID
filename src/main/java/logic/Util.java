@@ -1,6 +1,12 @@
+package logic;
+
+import com.mongodb.DBObject;
+import connectors.SQLConCLoud;
+
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 public class Util {
 
@@ -21,6 +27,15 @@ public class Util {
         System.out.println(getTimeToString(getTime()));
 
         System.out.println(getTimeToString(getTimeMinus(getTime(),2)));
+    }
+
+
+    public static boolean isValid(DBObject object){
+        SQLConCLoud connector = new SQLConCLoud();
+        String[] temp = object.toString().split(",");
+        if(temp.length != 5 || !connector.isSensorPresent(temp[2]) || !connector.isZonePresent(temp[1])) return false;
+        return true;
+
     }
 
 }
