@@ -3,6 +3,7 @@ package logic;
 import com.mongodb.DBObject;
 import connectors.SQLConCLoud;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -31,7 +32,12 @@ public class Util {
 
 
     public static boolean isValid(DBObject object){
-        SQLConCLoud connector = new SQLConCLoud();
+        SQLConCLoud connector = null;
+        try {
+            connector = IniReader.getSQLConCloud();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         String[] temp = object.toString().split(",");
         if(temp.length != 5 || !connector.isSensorPresent(temp[2]) || !connector.isZonePresent(temp[1])) return false;
         return true;

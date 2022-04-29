@@ -1,6 +1,7 @@
+package deprecated;
+
 import com.mongodb.*;
 import com.mongodb.util.JSON;
-import connectors.SQLConCLoud;
 import connectors.SQLConLocal;
 import logic.Util;
 import org.json.JSONObject;

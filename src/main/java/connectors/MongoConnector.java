@@ -2,7 +2,6 @@ package connectors;
 
 import com.mongodb.*;
 import com.mongodb.util.JSON;
-import logic.START;
 import logic.Util;
 import org.json.JSONObject;
 
@@ -37,7 +36,7 @@ public class MongoConnector extends Thread {
 
     @Override
     public void run() {
-        while(i<10){
+        while(i<20){
             sendToSql();
             transfer();
             i +=periodicity;
@@ -50,8 +49,13 @@ public class MongoConnector extends Thread {
     }
 
     public void transfer(){
-        instant = Instant.parse("2022-04-19T15:08:1"+i+"Z");
-
+        //instant = logic.Util.getTime();
+        if(i<10)
+            instant = Instant.parse("2022-04-26T09:38:2"+i+"Z");
+        else {
+            int t = i-10;
+            instant = Instant.parse("2022-04-26T09:38:3" + t + "Z");
+        }
         BasicDBObject getQuery = new BasicDBObject();
         getQuery.put("Data", new BasicDBObject("$gte", Util.getTimeToString(Util.getTimeMinus(instant,periodicity))).append("$lt", Util.getTimeToString(instant)));
 
@@ -74,6 +78,7 @@ public class MongoConnector extends Thread {
 
             }else{
                 System.err.println("Inserted into Error: "+ temp.toString());
+                //adaptar formato
                 errorCol.insert(temp);
             }
         }
@@ -83,7 +88,6 @@ public class MongoConnector extends Thread {
         DBCollection tempCol = localDB.getCollection("temp");
         DBCursor cursor = tempCol.find();
         DBCollection measurementsCol = localDB.getCollection("measurement");
-
 
         while (cursor.hasNext()){
             DBObject temp = cursor.next();
@@ -98,7 +102,5 @@ public class MongoConnector extends Thread {
 
 
     public static void main(String[] args) {
-        MongoConnector db = new MongoConnector(START.getLocalDB(), START.getCloudCollection(),2, START.getSQLConLocal());
-        db.start();
     }
 }

@@ -5,6 +5,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import connectors.MongoConnector;
+import connectors.SQLConCLoud;
 import connectors.SQLConLocal;
 import org.ini4j.Ini;
 
@@ -19,13 +20,32 @@ public class IniReader {
         return reader;
     }
 
-    private static String[] getSQLFields() throws IOException {
+    private static String[] getSQLLocalFields() throws IOException {
         Ini reader = IniReader.loadConfigFile();
         String sql_host = reader.get("SQL Connection Local", "host", String.class);
         String sql_port = reader.get("SQL Connection Local", "port", String.class);
         String sql_database_name = reader.get("SQL Connection Local", "database_name", String.class);
         return new String[] {sql_host, sql_port, sql_database_name};
     }
+
+    private static String[] getSQLCloudFields() throws IOException {
+        Ini reader = IniReader.loadConfigFile();
+        String sql_host = reader.get("SQL Connection Cloud", "host", String.class);
+        String sql_database_name = reader.get("SQL Connection Cloud", "database_name", String.class);
+        String user = reader.get("SQL Connection Cloud","username", String.class);
+        String password = reader.get("SQL Connection Cloud","password", String.class);
+        return new String[] {sql_host,user,password, sql_database_name};
+    }
+
+    public static SQLConCLoud getSQLConCloud() throws IOException {
+        String[] sqlCloudFields = IniReader.getSQLCloudFields();
+
+        String url = "jdbc:mysql://" + sqlCloudFields[0] + "/" + sqlCloudFields[3];
+
+        SQLConCLoud connector = new SQLConCLoud(url, sqlCloudFields[1], sqlCloudFields[2]);
+        return connector;
+    }
+
 
 
     private static String[] getMongoCloudFields() throws IOException {
@@ -57,10 +77,24 @@ public class IniReader {
 
     public static void startServers(){
 //TO DO
+        ProcessBuilder processBuilderMongo = new ProcessBuilder("batchFiles/startimdbreplica.bat");
+        ProcessBuilder processBuilderOpenCmd = new ProcessBuilder("batchFiles/startCmd.bat");
+        try {
+            processBuilderMongo.start();
+            processBuilderOpenCmd.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static int getPeriodicity() throws IOException {
+        Ini reader = IniReader.loadConfigFile();
+        int periodicity = reader.get("Periodicity", "periodicity",Integer.class);
+        return periodicity;
     }
 
 
-    public static void connectToMongos(int periodicity){
+    public static void connectToMongos(){
 
         try {
             startServers();
@@ -82,14 +116,15 @@ public class IniReader {
             DB cloudDB = client.getDB(configFields[2]);
             DBCollection cloudCollection = cloudDB.getCollection(configFields[3]);
 
-            String[] sqlFields = getSQLFields();
-            String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] + "/" + sqlFields[2];
+            String[] sqlFields = getSQLLocalFields();
+            //String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] + "/" + sqlFields[2];
+            String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] ;
             //automatizar
             String user = "admin";
             String pass = "admin";
             SQLConLocal sqlConLocal = new SQLConLocal(url,user, pass);
 
-            MongoConnector mongoConnector = new MongoConnector(localDatabase, cloudCollection,periodicity,sqlConLocal);
+            MongoConnector mongoConnector = new MongoConnector(localDatabase, cloudCollection,getPeriodicity(),sqlConLocal);
             mongoConnector.start();
         } catch (IOException e) {
             e.printStackTrace();
