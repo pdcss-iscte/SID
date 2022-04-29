@@ -15,7 +15,12 @@ public class Main {
     private ArrayList<Fila> list;
 
     private Main(){
+
+    }
+
+    public void run(){
         try {
+            System.err.println("adeus");
             list = new ArrayList<>();
             SQLConCLoud connector = IniReader.getSQLConCloud();
             zones = connector.getZones();
@@ -80,14 +85,16 @@ public class Main {
     }
 
     public static Main getINSTANCE(){
-        if(INSTANCE==null)
+        if(INSTANCE==null) {
+            System.err.println("ola");
             INSTANCE = new Main();
+        }
         return INSTANCE;
     }
 
 
     public static void main(String[] args) {
-        Main.getINSTANCE();
+        Main.getINSTANCE().run();
     }
 
 

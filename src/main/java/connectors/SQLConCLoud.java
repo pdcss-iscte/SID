@@ -78,7 +78,7 @@ public class SQLConCLoud extends SQLCon {
                 break;
             }
         }
-        if(temp == null) throw new IllegalArgumentException("logic.Zone doesn't exist");
+        if(temp == null) throw new IllegalArgumentException("Zone doesn't exist");
         return temp;
     }
 
