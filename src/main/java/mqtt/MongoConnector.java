@@ -81,8 +81,10 @@ public class MongoConnector extends Thread {
     }
 
     public void sendToBroker(){
+        System.out.println("Connecting to MQTT...");
         String cloudServer = "tcp://broker.mqtt-dashboard.com:1883";
         String cloudTopic = "sid2022_g05";
+
         DB localDB= null;
         try {
             localDB = IniReader.getLocalDatabase();
@@ -92,20 +94,18 @@ public class MongoConnector extends Thread {
         String clientId = "sid2022_g05";
         IMqttClient mqttClient = null;
         try {
-            mqttClient = new MqttClient(cloudServer,clientId);
-
-
+        mqttClient = new MqttClient(cloudServer,clientId);
         MqttConnectOptions options = new MqttConnectOptions();
         options.setAutomaticReconnect(true);
         options.setCleanSession(true);
         options.setConnectionTimeout(10);
         mqttClient.connect(options);
-
+        System.out.println("Connected!");
         DBCollection tempCol = localDB.getCollection("temp");
         DBCursor cursor = tempCol.find();
         DBCollection measurementsCol = localDB.getCollection("measurement");
-
         long elapsedTime=0;
+        System.out.println("Sending data...");
         while (cursor.hasNext()){
             long start = System.nanoTime();
             DBObject temp = cursor.next();
@@ -116,7 +116,7 @@ public class MongoConnector extends Thread {
             msg.setRetained(false);
             mqttClient.publish(cloudTopic,msg);
             elapsedTime= System.nanoTime() - start;
-
+            System.out.println("Data sended succesfully in:"+elapsedTime= "seconds");
         }
             Thread.sleep(2000-elapsedTime);
         } catch (InterruptedException | MqttException e) {
