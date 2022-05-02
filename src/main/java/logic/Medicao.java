@@ -24,8 +24,8 @@ public class Medicao {
     public static Medicao createMedicao(JSONObject toInsert){
         int id_zone = Integer.parseInt(String.valueOf(toInsert.get("Zona").toString().charAt(1)));
         String id_sensor = toInsert.get("Sensor").toString();
-        String date_time = toInsert.get("Data").toString();
         double value = Double.parseDouble(toInsert.get("Medicao").toString());
+        String date_time = toInsert.get("Data").toString();
         String date = date_time.split("T")[0];
         String time = date_time.split("T")[1].replace("Z", "");
         String timestamp_string = date + " " + time;

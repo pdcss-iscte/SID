@@ -20,7 +20,22 @@ public class SQLConLocal extends SQLCon{
 
     }
 
+    public void insertErrorIntoDB(JSONObject toInsert) throws SQLException{
+        PreparedStatement statement = null;
 
+        String query = "INSERT Into estufa.error (Descricao, Hora) VALUES (?,?)";
+
+            statement = getConnection().prepareStatement(query);
+            statement.setString(1,toInsert.get("error").toString());
+            String date_time = toInsert.get("timestamp").toString();
+            String date = date_time.split("T")[0];
+            String time = date_time.split("T")[1].replace("Z", "");
+            String timestamp_string = date + " " + time;
+            Timestamp timestamp = Timestamp.valueOf(timestamp_string);
+            statement.setTimestamp(2,timestamp);
+            statement.execute();
+
+    }
 
     public void insertIntoDB(JSONObject toInsert) throws SQLException {
         PreparedStatement statement = null;

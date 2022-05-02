@@ -3,10 +3,13 @@ package connectors;
 import com.mongodb.*;
 import com.mongodb.util.JSON;
 import logic.Util;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 
+import javax.swing.text.Document;
 import java.sql.SQLException;
 import java.time.Instant;
+import static com.mongodb.client.model.Filters.eq;
 
 public class MongoConnector extends Thread {
 
@@ -38,6 +41,7 @@ public class MongoConnector extends Thread {
     @Override
     public void run() {
         while(i<20){
+            sendErrorToSQL();
             sendToSql();
             transfer();
             i +=periodicity;
@@ -79,7 +83,7 @@ public class MongoConnector extends Thread {
 
             }else{
                 //adaptar formato
-                sendError(temp,errorCol);
+                sendErrorToMongo(temp,errorCol);
             }
         }
     }
@@ -94,7 +98,7 @@ public class MongoConnector extends Thread {
             try {
                 sqlConLocal.insertIntoDB(new JSONObject(JSON.serialize(temp)));
             } catch (SQLException throwables) {
-                sendError(temp,errorCol);
+                sendErrorToMongo(temp,errorCol);
 
             }
             measurementsCol.insert(temp);
@@ -103,7 +107,7 @@ public class MongoConnector extends Thread {
     }
 
 
-    public void sendError(DBObject temp,DBCollection erroCol){
+    public void sendErrorToMongo(DBObject temp,DBCollection erroCol){
         DBObject document = new BasicDBObject();
         document.put("error",temp);
         document.put("timestamp",Util.getTimeToString(Util.getTime()));
@@ -113,6 +117,55 @@ public class MongoConnector extends Thread {
 
 
     }
+
+    public void sendErrorToSQL(){
+        DBCollection erroCol = localDB.getCollection("error");
+        BasicDBObject getQuery = new BasicDBObject();
+        getQuery.put("sent", false);
+        DBCursor cursor = erroCol.find(getQuery);
+
+
+        while(cursor.hasNext()){
+            DBObject temp = cursor.next();
+            try {
+                sqlConLocal.insertErrorIntoDB(new JSONObject(JSON.serialize(temp)));
+                String id = temp.get("_id").toString();
+                changeError(id, erroCol);
+            }catch (SQLException e){
+
+            }
+        }
+    }
+
+
+    public void changeError(String id,DBCollection errorCol){
+        System.err.println(id);
+        BasicDBObject query = new BasicDBObject();
+        query.put("_id", new ObjectId(id));
+
+        BasicDBObject newDocument = new BasicDBObject();
+        newDocument.put("sent", "true");
+
+        BasicDBObject updateObject = new BasicDBObject();
+        updateObject.put("$set", newDocument);
+
+        errorCol.update(query, updateObject);
+        System.err.println("changed to true");
+    }
+
+
+    /*
+    BasicDBObject query = new BasicDBObject();
+query.put("name", "Shubham");
+
+BasicDBObject newDocument = new BasicDBObject();
+newDocument.put("name", "John");
+
+BasicDBObject updateObject = new BasicDBObject();
+updateObject.put("$set", newDocument);
+
+collection.update(query, updateObject);
+     */
 
 
 

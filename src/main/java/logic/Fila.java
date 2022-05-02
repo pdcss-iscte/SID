@@ -20,13 +20,14 @@ public class Fila {
 
     public void add(Medicao medicao){
         //ver tamanho
-        if(i==2)
+        if(i>2)
             isError(medicao);
         //verify
         if(i >= 3)
             dealWithRemove(removeFirst());
 
         lista[i] = medicao;
+        System.out.println(medicao.getLeitura()+ "    i = " + i);
         i++;
 
     }
@@ -51,6 +52,7 @@ public class Fila {
     }
 
     public void isError(Medicao medicao){
+        System.out.println("i = "+ i);
         //cenario 1
         if(suddenChanges(medicao,lista[2],lista[1])== 2 && previousErrors(lista[2],lista[1]) == 0){
             medicao.setError(true);
