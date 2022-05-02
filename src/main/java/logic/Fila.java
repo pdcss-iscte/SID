@@ -1,6 +1,8 @@
 package logic;
 
 
+import connectors.SQLConLocal;
+
 public class Fila {
 
     private Medicao[] lista;
@@ -70,6 +72,11 @@ public class Fila {
         lista[0] = lista[1];
         lista[1] = lista[2];
         i = 2;
+
+        if(temp.isError()){
+            SQLConLocal connection = IniReader.getSQLConLocal();
+            String queryGetID = "Select ";
+        }
 
         return temp;
     }

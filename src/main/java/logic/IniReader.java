@@ -130,4 +130,20 @@ public class IniReader {
 
     }
 
+    public static SQLConLocal getSQLConLocal(){
+        String[] sqlFields = new String[0];
+        try {
+            sqlFields = getSQLLocalFields();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] + "/" + sqlFields[2];
+        String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] ;
+        //automatizar
+        String user = "root";
+        String pass = "abc";
+        return new SQLConLocal(url,user, pass);
+
+    }
+
 }
