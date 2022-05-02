@@ -116,7 +116,7 @@ public class MongoConnector extends Thread {
             msg.setRetained(false);
             mqttClient.publish(cloudTopic,msg);
             elapsedTime= System.nanoTime() - start;
-            System.out.println("Data sended succesfully in:"+elapsedTime= "seconds");
+            System.out.println("Data sended succesfully in:" + elapsedTime + "seconds");
         }
             Thread.sleep(2000-elapsedTime);
         } catch (InterruptedException | MqttException e) {
