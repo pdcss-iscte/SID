@@ -20,9 +20,9 @@ public class MqttPublisher {
 
 	public static void main(String[] args) throws MqttException, InterruptedException {
 		String cloudServer = "tcp://broker.mqtt-dashboard.com:1883";
-		String cloudTopic = "sid2022_g00";
+		String cloudTopic = "sid2022_g05";
 		
-		String clientId = UUID.randomUUID().toString();
+		String clientId = "sid2022_g05";
 		IMqttClient mqttClient = new MqttClient(cloudServer,clientId);
 		
 		MqttConnectOptions options = new MqttConnectOptions();
