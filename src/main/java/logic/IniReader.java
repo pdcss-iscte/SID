@@ -42,8 +42,7 @@ public class IniReader {
 
         String url = "jdbc:mysql://" + sqlCloudFields[0] + "/" + sqlCloudFields[3];
 
-        SQLConCLoud connector = new SQLConCLoud(url, sqlCloudFields[1], sqlCloudFields[2]);
-        return connector;
+        return new SQLConCLoud(url, sqlCloudFields[1], sqlCloudFields[2]);
     }
 
 
@@ -71,8 +70,7 @@ public class IniReader {
         String database_name = reader.get("Local Mongo", "database_name", String.class);
         String uri = "mongodb://" + ip1 + ":" + port1 + "," + ip2 + ":" + port2 + "," + ip3 + ":" + port3;
         MongoClient client = new MongoClient(new MongoClientURI(uri));
-        DB database = client.getDB(database_name);
-        return database;
+        return client.getDB(database_name);
     }
 
     public static void startServers(){
@@ -89,8 +87,7 @@ public class IniReader {
 
     private static int getPeriodicity() throws IOException {
         Ini reader = IniReader.loadConfigFile();
-        int periodicity = reader.get("Periodicity", "periodicity",Integer.class);
-        return periodicity;
+        return reader.get("Periodicity", "periodicity",Integer.class);
     }
 
 
@@ -120,8 +117,8 @@ public class IniReader {
             //String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] + "/" + sqlFields[2];
             String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] ;
             //automatizar
-            String user = "admin";
-            String pass = "admin";
+            String user = "root";
+            String pass = "abc";
             SQLConLocal sqlConLocal = new SQLConLocal(url,user, pass);
 
             MongoConnector mongoConnector = new MongoConnector(localDatabase, cloudCollection,getPeriodicity(),sqlConLocal);

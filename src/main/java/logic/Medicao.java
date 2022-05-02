@@ -27,7 +27,7 @@ public class Medicao {
         double value = Double.parseDouble(toInsert.get("Medicao").toString());
         String date = date_time.split("T")[0];
         String time = date_time.split("T")[1].replace("Z", "");
-        String timestamp_string = new String (date + " " + time);
+        String timestamp_string = date + " " + time;
         Timestamp timestamp = Timestamp.valueOf(timestamp_string);
 
         Zone zone = Main.getINSTANCE().getZone(id_zone);
@@ -37,12 +37,13 @@ public class Medicao {
         return new Medicao(zone,sensor,timestamp,value);
     }
 
+
     public boolean isError() {
         return error;
     }
 
-    public void setError(){
-        error = true;
+    public void setError(boolean isError){
+        error =isError;
     }
 
     public Zone getZone() {
