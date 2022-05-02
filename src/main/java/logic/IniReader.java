@@ -57,6 +57,14 @@ public class IniReader {
 
     public static void startServers(){
 //TO DO
+        ProcessBuilder processBuilderMongo = new ProcessBuilder("batchFiles/startimdbreplica.bat");
+        ProcessBuilder processBuilderOpenCmd = new ProcessBuilder("batchFiles/startCmd.bat");
+        try {
+            processBuilderMongo.start();
+            processBuilderOpenCmd.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

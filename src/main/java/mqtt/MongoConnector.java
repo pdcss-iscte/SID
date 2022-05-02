@@ -3,6 +3,7 @@ package mqtt;
 import com.mongodb.*;
 import com.mongodb.util.JSON;
 import connectors.SQLConLocal;
+import logic.IniReader;
 import logic.START;
 import logic.Util;
 import org.json.JSONObject;
@@ -11,6 +12,8 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import java.io.IOException;
 import java.time.Instant;
 
 public class MongoConnector extends Thread {
@@ -80,7 +83,12 @@ public class MongoConnector extends Thread {
     public void sendToBroker(){
         String cloudServer = "tcp://broker.mqtt-dashboard.com:1883";
         String cloudTopic = "sid2022_g05";
-
+        DB localDB= null;
+        try {
+            localDB = IniReader.getLocalDatabase();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         String clientId = "sid2022_g05";
         IMqttClient mqttClient = null;
         try {
@@ -121,6 +129,7 @@ public class MongoConnector extends Thread {
 
 
     public static void main(String[] args) {
+        IniReader.startServers();
         MongoConnector db = new MongoConnector(START.getLocalDB(), START.getCloudCollection(),2);
         db.start();
     }
