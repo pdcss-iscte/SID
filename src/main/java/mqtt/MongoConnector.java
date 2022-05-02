@@ -6,7 +6,11 @@ import connectors.SQLConLocal;
 import logic.START;
 import logic.Util;
 import org.json.JSONObject;
-
+import org.eclipse.paho.client.mqttv3.IMqttClient;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.time.Instant;
 
 public class MongoConnector extends Thread {
@@ -25,12 +29,11 @@ public class MongoConnector extends Thread {
     private int periodicity;
 
 
-    public MongoConnector(DB localDB, DBCollection cloudCollection, int periodicity, SQLConLocal sqlConLocal){
+    public MongoConnector(DB localDB, DBCollection cloudCollection, int periodicity){
 
         this.cloudCollection = cloudCollection;
         this.localDB = localDB;
         this.periodicity = periodicity;
-        this.sqlConLocal = sqlConLocal;
 
     }
 
@@ -38,15 +41,9 @@ public class MongoConnector extends Thread {
 
     @Override
     public void run() {
-        while(i<10){
-            sendToSql();
-            transfer();
-            i +=periodicity;
-            try {
-                sleep(periodicity*1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        while(true){
+            sendToBroker();
+
         }
     }
 
@@ -80,17 +77,42 @@ public class MongoConnector extends Thread {
         }
     }
 
-    public void sendToSql(){
+    public void sendToBroker(){
+        String cloudServer = "tcp://broker.mqtt-dashboard.com:1883";
+        String cloudTopic = "sid2022_g05";
+
+        String clientId = "sid2022_g05";
+        IMqttClient mqttClient = null;
+        try {
+            mqttClient = new MqttClient(cloudServer,clientId);
+
+
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setAutomaticReconnect(true);
+        options.setCleanSession(true);
+        options.setConnectionTimeout(10);
+        mqttClient.connect(options);
+
         DBCollection tempCol = localDB.getCollection("temp");
         DBCursor cursor = tempCol.find();
         DBCollection measurementsCol = localDB.getCollection("measurement");
 
-
+        long elapsedTime=0;
         while (cursor.hasNext()){
+            long start = System.nanoTime();
             DBObject temp = cursor.next();
-            sqlConLocal.insertIntoDB(new JSONObject(JSON.serialize(temp)));
-            measurementsCol.insert(temp);
-            tempCol.remove(temp);
+            String rawMsg = temp.toString();
+            byte[] payload = rawMsg.getBytes();
+            MqttMessage msg = new MqttMessage(payload);
+            msg.setQos(0);
+            msg.setRetained(false);
+            mqttClient.publish(cloudTopic,msg);
+            elapsedTime= System.nanoTime() - start;
+
+        }
+            Thread.sleep(2000-elapsedTime);
+        } catch (InterruptedException | MqttException e) {
+            e.printStackTrace();
         }
     }
 
@@ -99,7 +121,7 @@ public class MongoConnector extends Thread {
 
 
     public static void main(String[] args) {
-        MongoConnector db = new MongoConnector(START.getLocalDB(), START.getCloudCollection(),2, START.getSQLConLocal());
+        MongoConnector db = new MongoConnector(START.getLocalDB(), START.getCloudCollection(),2);
         db.start();
     }
 }
