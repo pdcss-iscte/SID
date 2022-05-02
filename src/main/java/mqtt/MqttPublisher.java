@@ -6,6 +6,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.UUID;
 
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -41,17 +42,18 @@ public class MqttPublisher {
 		}
 	}
 
-	public static DBCursor dbConnector(){
-	try {
-		IniReader localDB =  IniReader.getLocalDatabase();
-		DBCollection tempCol = localDB.getCollection("temp");
-		DBCursor cursor = tempCol.find();
-		DBCollection measurementsCol = localDB.getCollection("measurement");
-		return cursor;
-	} catch (IOException e) {
-		e.printStackTrace();
+	public static DBCursor dbConnector() {
+		try {
+			DB localDB = IniReader.getLocalDatabase();
+			DBCollection tempCol = localDB.getCollection("temp");
+			DBCursor cursor = tempCol.find();
+			DBCollection measurementsCol = localDB.getCollection("measurement");
+			return cursor;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
-
 	public static void publish(){
 		IMqttClient mqttClient = mqttConnector();
 		DBCursor cursor = dbConnector();
@@ -64,12 +66,20 @@ public class MqttPublisher {
 			MqttMessage msg = new MqttMessage(payload);
 			msg.setQos(0);
 			msg.setRetained(false);
-			mqttClient.publish(cloudTopic,msg);
+			try {
+				mqttClient.publish("sid2022_g05",msg);
+			} catch (MqttException e) {
+				e.printStackTrace();
+			}
 			System.out.println("Data sended succesfully");
 		}
-		Thread.sleep(2000);
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
-	}
+		}
 	public static void main(String[] args) throws MqttException, InterruptedException {
 	publish();
 
