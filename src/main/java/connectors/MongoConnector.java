@@ -5,6 +5,7 @@ import com.mongodb.util.JSON;
 import logic.Util;
 import org.json.JSONObject;
 
+import java.sql.SQLException;
 import java.time.Instant;
 
 public class MongoConnector extends Thread {
@@ -77,9 +78,8 @@ public class MongoConnector extends Thread {
                 System.out.println("Inserted into Temp: " +temp.toString());
 
             }else{
-                System.err.println("Inserted into Error: "+ temp.toString());
                 //adaptar formato
-                errorCol.insert(temp);
+                sendError(temp,errorCol);
             }
         }
     }
@@ -88,15 +88,31 @@ public class MongoConnector extends Thread {
         DBCollection tempCol = localDB.getCollection("temp");
         DBCursor cursor = tempCol.find();
         DBCollection measurementsCol = localDB.getCollection("measurement");
-
+        DBCollection errorCol = localDB.getCollection("error");
         while (cursor.hasNext()){
             DBObject temp = cursor.next();
-            sqlConLocal.insertIntoDB(new JSONObject(JSON.serialize(temp)));
+            try {
+                sqlConLocal.insertIntoDB(new JSONObject(JSON.serialize(temp)));
+            } catch (SQLException throwables) {
+                sendError(temp,errorCol);
+
+            }
             measurementsCol.insert(temp);
             tempCol.remove(temp);
         }
     }
 
+
+    public void sendError(DBObject temp,DBCollection erroCol){
+        DBObject document = new BasicDBObject();
+        document.put("error",temp);
+        document.put("timestamp",Util.getTimeToString(Util.getTime()));
+        document.put("sent", false);
+        erroCol.insert(document);
+        System.err.println("Inserted into Error: "+ temp.toString());
+
+
+    }
 
 
 

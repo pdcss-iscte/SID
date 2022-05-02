@@ -22,19 +22,9 @@ public class SQLConLocal extends SQLCon{
 
 
 
-    public void insertIntoDB(JSONObject toInsert){
+    public void insertIntoDB(JSONObject toInsert) throws SQLException {
         PreparedStatement statement = null;
-        try {
-            /*
-            int id_zone = Integer.parseInt(String.valueOf(toInsert.get("Zona").toString().charAt(1)));
-            String sensor = toInsert.get("Sensor").toString();
-            String date_time = toInsert.get("Data").toString();
-            double value = Double.parseDouble(toInsert.get("Medicao").toString());
-            String date = date_time.split("T")[0];
-            String time = date_time.split("T")[1].replace("Z", "");
-            String timestamp_string = new String (date + " " + time);
-            Timestamp timestamp = Timestamp.valueOf(timestamp_string);
-*/
+
             Medicao medicao = Medicao.createMedicao(toInsert);
 
             String query = "INSERT INTO estufa.medicao (Zona,IDSensor,Hora,Leitura) VALUES (?, ?, ?, ?)";
@@ -47,9 +37,5 @@ public class SQLConLocal extends SQLCon{
             statement.execute();
             Main.getINSTANCE().add(medicao);
 
-        } catch (SQLException e) {
-            System.out.println(statement.toString());
-            e.printStackTrace();
-        }
     }
 }
