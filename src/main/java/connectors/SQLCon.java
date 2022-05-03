@@ -27,8 +27,27 @@ public abstract class SQLCon {
         }
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 
     public Connection getConnection() {
         return connection;
+    }
+
+    public void closeConnection(){
+        try {
+            connection.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 }

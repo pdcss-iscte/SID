@@ -1,5 +1,6 @@
 package connectors;
 
+import logic.Main;
 import logic.Sensor;
 import logic.Zone;
 
@@ -13,11 +14,11 @@ import java.util.List;
 
 public class SQLConCLoud extends SQLCon {
 
+//implementar ini
 
 
-
-    public SQLConCLoud() {
-        super("jdbc:mysql://194.210.86.10",  "aluno",  "aluno");
+    public SQLConCLoud(String url, String user, String password) {
+        super(url,user,  password);
 
     }
 
@@ -38,14 +39,13 @@ public class SQLConCLoud extends SQLCon {
                 System.out.println(temp.toString());
                 zones.add(temp);
             }
-            con.close();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
         return zones;
     }
 
-    public List<Sensor> getSensors(List<Zone> zones){
+    public List<Sensor> getSensors(){
         List<Sensor> sensors = new ArrayList<>();
         Connection con = getConnection();
         String query = "Select * from sid2022.sensor";
@@ -58,11 +58,10 @@ public class SQLConCLoud extends SQLCon {
                 double limiteinferior = resultSet.getDouble("limiteinferior");
                 double limitesuperior = resultSet.getDouble("limitesuperior");
                 int idzona = resultSet.getInt("idzona");
-                Sensor temp =new Sensor(getZone(idzona,zones),limiteinferior,limitesuperior,tipo+idsensor);
+                Sensor temp =new Sensor(getZone(idzona),limiteinferior,limitesuperior,tipo+idsensor);
                 System.out.println(temp.toString());
                 sensors.add(temp);
             }
-            con.close();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -70,15 +69,16 @@ public class SQLConCLoud extends SQLCon {
     }
 
 
-    public Zone getZone(int id, List<Zone> zones){
+    public Zone getZone(int id){
+
         Zone temp= null;
-        for(Zone zone: zones){
+        for(Zone zone: Main.getINSTANCE().getZones()){
             if(zone.getId() == id){
                 temp = zone;
                 break;
             }
         }
-        if(temp == null) throw new IllegalArgumentException("logic.Zone doesn't exist");
+        if(temp == null) throw new IllegalArgumentException("Zone doesn't exist");
         return temp;
     }
 

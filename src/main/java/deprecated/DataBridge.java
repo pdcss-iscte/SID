@@ -1,10 +1,12 @@
+package deprecated;
+
 import com.mongodb.*;
 import com.mongodb.util.JSON;
-import connectors.SQLConCLoud;
 import connectors.SQLConLocal;
 import logic.Util;
 import org.json.JSONObject;
 
+import java.sql.SQLException;
 import java.time.Instant;
 
 
@@ -80,8 +82,10 @@ public class DataBridge extends Thread{
             }
 
 
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
-            lastInstant = instant;
+        lastInstant = instant;
 
     }
 
