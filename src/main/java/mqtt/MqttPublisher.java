@@ -1,33 +1,30 @@
 package mqtt;
 
 import java.io.IOException;
-import java.sql.Timestamp;
-import java.util.Random;
-import java.util.Timer;
-import java.util.UUID;
-
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 import logic.IniReader;
 import org.eclipse.paho.client.mqttv3.IMqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.json.JSONObject;
+
 
 public class MqttPublisher {
+	private static IMqttClient mqttClient;
+	private static DBCursor cursor;
+	private final static String cloudServer = "tcp://broker.mqtt-dashboard.com:1883";
+	private final static String cloudTopic = "sid2022_g05";
+	private final static String clientId = "sid2022_g05";
 
-	public static IMqttClient mqttConnector(){
+
+
+	public static void mqttConnector(){
 		try {
 		System.out.println("Connecting to MQTT...");
-		String cloudServer = "tcp://broker.mqtt-dashboard.com:1883";
-		String cloudTopic = "sid2022_g05";
-		String clientId = "sid2022_g05";
-		IMqttClient mqttClient = null;
 		mqttClient = new MqttClient(cloudServer,clientId);
 		MqttConnectOptions options = new MqttConnectOptions();
 		options.setAutomaticReconnect(true);
@@ -35,28 +32,24 @@ public class MqttPublisher {
 		options.setConnectionTimeout(10);
 		mqttClient.connect(options);
 		System.out.println("Connected!");
-		return mqttClient;
 		} catch (MqttException e) {
 			e.printStackTrace();
-			return null;
 		}
 	}
 
-	public static DBCursor dbConnector() {
+	public static void dbConnector() {
 		try {
 			DB localDB = IniReader.getLocalDatabase();
 			DBCollection tempCol = localDB.getCollection("temp");
-			DBCursor cursor = tempCol.find();
+			cursor = tempCol.find();
 			DBCollection measurementsCol = localDB.getCollection("measurement");
-			return cursor;
 		} catch (IOException e) {
 			e.printStackTrace();
-			return null;
 		}
 	}
 	public static void publish(){
-		IMqttClient mqttClient = mqttConnector();
-		DBCursor cursor = dbConnector();
+		mqttConnector();
+		dbConnector();
 		System.out.println("Sending data...");
 		while (cursor.hasNext()){
 			long start = System.nanoTime();
@@ -67,7 +60,7 @@ public class MqttPublisher {
 			msg.setQos(0);
 			msg.setRetained(false);
 			try {
-				mqttClient.publish("sid2022_g05",msg);
+				mqttClient.publish(cloudTopic,msg);
 			} catch (MqttException e) {
 				e.printStackTrace();
 			}
