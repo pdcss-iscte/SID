@@ -7,10 +7,14 @@ import com.mongodb.MongoClientURI;
 import connectors.MongoConnector;
 import connectors.SQLConCLoud;
 import connectors.SQLConLocal;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.ini4j.Ini;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class IniReader {
 
@@ -42,7 +46,8 @@ public class IniReader {
 
         String url = "jdbc:mysql://" + sqlCloudFields[0] + "/" + sqlCloudFields[3];
 
-        return new SQLConCLoud(url, sqlCloudFields[1], sqlCloudFields[2]);
+        SQLConCLoud connector = new SQLConCLoud(url, sqlCloudFields[1], sqlCloudFields[2]);
+        return connector;
     }
 
 
@@ -70,7 +75,8 @@ public class IniReader {
         String database_name = reader.get("Local Mongo", "database_name", String.class);
         String uri = "mongodb://" + ip1 + ":" + port1 + "," + ip2 + ":" + port2 + "," + ip3 + ":" + port3;
         MongoClient client = new MongoClient(new MongoClientURI(uri));
-        return client.getDB(database_name);
+        DB database = client.getDB(database_name);
+        return database;
     }
 
     public static void startServers(){
@@ -87,13 +93,14 @@ public class IniReader {
 
     private static int getPeriodicity() throws IOException {
         Ini reader = IniReader.loadConfigFile();
-        return reader.get("Periodicity", "periodicity",Integer.class);
+        int periodicity = reader.get("Periodicity", "periodicity",Integer.class);
+        return periodicity;
     }
-
 
     public static void connectToMongos(){
 
         try {
+            startServers();
 
             DB localDatabase = getLocalDatabase();
 
@@ -116,8 +123,8 @@ public class IniReader {
             //String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] + "/" + sqlFields[2];
             String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] ;
             //automatizar
-            String user = "root";
-            String pass = "abc";
+            String user = "admin";
+            String pass = "admin";
             SQLConLocal sqlConLocal = new SQLConLocal(url,user, pass);
 
             MongoConnector mongoConnector = new MongoConnector(localDatabase, cloudCollection,getPeriodicity(),sqlConLocal);
@@ -129,20 +136,28 @@ public class IniReader {
 
     }
 
-    public static SQLConLocal getSQLConLocal(){
-        String[] sqlFields = new String[0];
-        try {
-            sqlFields = getSQLLocalFields();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] + "/" + sqlFields[2];
-        String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] ;
-        //automatizar
-        String user = "root";
-        String pass = "abc";
-        return new SQLConLocal(url,user, pass);
+    public static MqttClient getMQTTConnection() throws IOException {
+        Ini reader = IniReader.loadConfigFile();
+        String url = reader.get("MQTT Broker", "mqtt_server", String.class);
+        String topic = getMQTTTopic();
+        int randomID = ThreadLocalRandom.current().nextInt(0,1000+1);
 
+        try{
+            MqttClient client = new MqttClient(url,"Sql"+ topic+randomID, new MqttDefaultFilePersistence("/mqtt_cache"));
+            client.connect();
+            client.subscribe(topic);
+            return client;
+        }catch (MqttException e){
+            System.err.println("MQTT connection failed");
+        }
+        return null;
+    }
+
+    public static String getMQTTTopic() throws IOException {
+        Ini reader = IniReader.loadConfigFile();
+        return reader.get("MQTT Broker", "mqtt_topic", String.class);
     }
 
 }
+
+
