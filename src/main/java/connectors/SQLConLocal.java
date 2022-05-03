@@ -3,6 +3,7 @@ package connectors;
 import logic.IniReader;
 import logic.Main;
 import logic.Medicao;
+import org.ini4j.Ini;
 import org.json.JSONObject;
 
 import java.sql.Connection;
@@ -69,5 +70,9 @@ public class SQLConLocal extends SQLCon{
             statement.setTimestamp(3, medicao.getTimestamp());
             statement.setDouble(4,medicao.getLeitura());
             statement.execute();
+    }
+
+    public static void main(String[] args) {
+        SQLConLocal local = IniReader.getSQLConLocal();
     }
 }

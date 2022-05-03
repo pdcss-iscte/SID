@@ -22,7 +22,6 @@ public class MongoConnector extends Thread {
     private MQTTPublisher publisher;
 
     private Instant instant;
-    private int i = 0;
 
     private int periodicity;
 
