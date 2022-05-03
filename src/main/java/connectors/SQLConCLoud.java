@@ -1,9 +1,11 @@
 package connectors;
 
+import logic.IniReader;
 import logic.Main;
 import logic.Sensor;
 import logic.Zone;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,10 +18,22 @@ public class SQLConCLoud extends SQLCon {
 
 //implementar ini
 
+    public static SQLConCLoud INSTANCE;
 
     public SQLConCLoud(String url, String user, String password) {
         super(url,user,  password);
 
+    }
+
+    public static SQLConCLoud getInstance(){
+        if(INSTANCE == null) {
+            try {
+                INSTANCE = IniReader.getSQLConCloud();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return INSTANCE;
     }
 
 

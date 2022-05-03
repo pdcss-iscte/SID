@@ -2,6 +2,8 @@ package connectors;
 
 import com.mongodb.*;
 import com.mongodb.util.JSON;
+import logic.Main;
+import logic.Medicao;
 import logic.Util;
 import org.bson.types.ObjectId;
 import org.json.JSONObject;
@@ -40,7 +42,7 @@ public class MongoConnector extends Thread {
 
     @Override
     public void run() {
-        while(i<20){
+        while(true){
             sendErrorToSQL();
             sendToSql();
             transfer();
@@ -54,13 +56,13 @@ public class MongoConnector extends Thread {
     }
 
     public void transfer(){
-        //instant = logic.Util.getTime();
-        if(i<10)
+        instant = logic.Util.getTime();
+        /*if(i<10)
             instant = Instant.parse("2022-04-26T09:38:2"+i+"Z");
         else {
             int t = i-10;
             instant = Instant.parse("2022-04-26T09:38:3" + t + "Z");
-        }
+        }*/
         BasicDBObject getQuery = new BasicDBObject();
         getQuery.put("Data", new BasicDBObject("$gte", Util.getTimeToString(Util.getTimeMinus(instant,periodicity))).append("$lt", Util.getTimeToString(instant)));
 
@@ -95,11 +97,11 @@ public class MongoConnector extends Thread {
         DBCollection errorCol = localDB.getCollection("error");
         while (cursor.hasNext()){
             DBObject temp = cursor.next();
+
             try {
-                sqlConLocal.insertIntoDB(new JSONObject(JSON.serialize(temp)));
+                Main.getINSTANCE().add(Medicao.createMedicao(new JSONObject(JSON.serialize(temp))));
             } catch (SQLException throwables) {
                 sendErrorToMongo(temp,errorCol);
-
             }
             measurementsCol.insert(temp);
             tempCol.remove(temp);
@@ -132,7 +134,7 @@ public class MongoConnector extends Thread {
                 String id = temp.get("_id").toString();
                 changeError(id, erroCol);
             }catch (SQLException e){
-
+                e.printStackTrace();
             }
         }
     }
@@ -152,23 +154,6 @@ public class MongoConnector extends Thread {
         errorCol.update(query, updateObject);
         System.err.println("changed to true");
     }
-
-
-    /*
-    BasicDBObject query = new BasicDBObject();
-query.put("name", "Shubham");
-
-BasicDBObject newDocument = new BasicDBObject();
-newDocument.put("name", "John");
-
-BasicDBObject updateObject = new BasicDBObject();
-updateObject.put("$set", newDocument);
-
-collection.update(query, updateObject);
-     */
-
-
-
 
     public static void main(String[] args) {
     }

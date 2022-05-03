@@ -94,7 +94,6 @@ public class IniReader {
     public static void connectToMongos(){
 
         try {
-            startServers();
 
             DB localDatabase = getLocalDatabase();
 

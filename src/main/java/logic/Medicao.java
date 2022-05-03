@@ -7,7 +7,6 @@ import java.sql.Timestamp;
 
 public class Medicao {
 
-        private int id;
         private Zone zone;
         private Sensor sensor;
         private Timestamp timestamp;
@@ -61,13 +60,5 @@ public class Medicao {
 
     public double getLeitura() {
         return leitura;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getId(){
-        return this.id;
     }
 }

@@ -33,11 +33,7 @@ public class Util {
 
     public static boolean isValid(DBObject object){
         SQLConCLoud connector = null;
-        try {
-            connector = IniReader.getSQLConCloud();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        connector = SQLConCLoud.getInstance();
         String[] temp = object.toString().split(",");
         if(temp.length != 5 || !connector.isSensorPresent(temp[2]) || !connector.isZonePresent(temp[1])) return false;
         return true;

@@ -3,6 +3,7 @@ package logic;
 import connectors.SQLConCLoud;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,41 +21,45 @@ public class Main {
 
     public void run(){
         try {
-            System.err.println("adeus");
+            IniReader.startServers();
             list = new ArrayList<>();
             SQLConCLoud connector = IniReader.getSQLConCloud();
             zones = connector.getZones();
             sensors = connector.getSensors();
             connector.closeConnection();
+            startList();
             IniReader.connectToMongos();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void add(Medicao medicao){
+    public void startList(){
+        for(Sensor sensor:sensors){
+            list.add(new Fila(sensor.getId()));
+        }
+    }
+
+    public void add(Medicao medicao) throws SQLException {
         for(Fila fila:list){
             if(fila.getName().equals(medicao.getSensor().getId())){
                 fila.add(medicao);
                 return;
             }
         }
-        Fila temp = new Fila(medicao.getSensor().getId());
-        temp.add(medicao);
-        list.add(temp);
-
+        throw new IllegalArgumentException("Não existe um sensor valido atribuido á medição");
     }
-
-    public Fila getFila(String id){
-        for (Fila fila: list){
-            if(id.equals(fila.getName())){
-                return fila;
+    /*
+        public Fila getFila(String id){
+            for (Fila fila: list){
+                if(id.equals(fila.getName())){
+                    return fila;
+                }
             }
+
+            throw new IllegalArgumentException();
         }
-
-        throw new IllegalArgumentException();
-    }
-
+    */
     public Zone getZone(int id){
         Zone zone = null;
         for(Zone z:zones){
@@ -86,7 +91,6 @@ public class Main {
 
     public static Main getINSTANCE(){
         if(INSTANCE==null) {
-            System.err.println("ola");
             INSTANCE = new Main();
         }
         return INSTANCE;

@@ -1,5 +1,6 @@
 package connectors;
 
+import logic.IniReader;
 import logic.Main;
 import logic.Medicao;
 import org.json.JSONObject;
@@ -9,16 +10,13 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 public class SQLConLocal extends SQLCon{
-    /*
-    private String sqlConnectionLocal = "jdbc:mysql://127.0.0.1";
-    private String localUsername = "admin";
-    private String localPassword = "admin";
-    */
+
 
     public SQLConLocal(String url, String user, String password) {
         super(url, user, password);
 
     }
+
 
     public void insertErrorIntoDB(JSONObject toInsert) throws SQLException{
         PreparedStatement statement = null;
@@ -33,14 +31,14 @@ public class SQLConLocal extends SQLCon{
             String timestamp_string = date + " " + time;
             Timestamp timestamp = Timestamp.valueOf(timestamp_string);
             statement.setTimestamp(2,timestamp);
+        System.out.println(statement.toString());
             statement.execute();
 
     }
 
-    public void insertIntoDB(JSONObject toInsert) throws SQLException {
+    public void insertIntoDB(Medicao medicao) throws SQLException {
         PreparedStatement statement = null;
 
-            Medicao medicao = Medicao.createMedicao(toInsert);
 
             String query = "INSERT INTO estufa.medicao (Zona,IDSensor,Hora,Leitura) VALUES (?, ?, ?, ?)";
 
@@ -50,7 +48,5 @@ public class SQLConLocal extends SQLCon{
             statement.setTimestamp(3, medicao.getTimestamp());
             statement.setDouble(4,medicao.getLeitura());
             statement.execute();
-            Main.getINSTANCE().add(medicao);
-
     }
 }

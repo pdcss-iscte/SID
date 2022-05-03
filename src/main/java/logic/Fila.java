@@ -1,7 +1,9 @@
 package logic;
 
 
+import com.mongodb.util.JSON;
 import connectors.SQLConLocal;
+import org.json.JSONObject;
 
 import java.sql.*;
 
@@ -18,7 +20,7 @@ public class Fila {
         i= 0;
     }
 
-    public void add(Medicao medicao){
+    public void add(Medicao medicao) throws SQLException {
         //ver tamanho
         if(i>2)
             isError(medicao);
@@ -27,7 +29,6 @@ public class Fila {
             dealWithRemove(removeFirst());
 
         lista[i] = medicao;
-        System.out.println(medicao.getLeitura()+ "    i = " + i);
         i++;
 
     }
@@ -52,12 +53,16 @@ public class Fila {
     }
 
     public void isError(Medicao medicao){
-        System.out.println("i = "+ i);
-        //cenario 1
-        if(suddenChanges(medicao,lista[2],lista[1])== 2 && previousErrors(lista[2],lista[1]) == 0){
+        System.out.println("Zona medicao:     "+ medicao.getSensor().getId());
+        System.out.println("Nome Fila:     "+ getName());
+        System.out.println("VALORES Fila:     "+ " posicao 0 " + lista[0].getLeitura() + " posicao 1 " + lista[1].getLeitura() + " posicao 2 " + lista[2].getLeitura());
+
+
+        //cenario 1 e 2
+        if(suddenChanges(medicao,lista[2],lista[1])== 2 && previousErrors(lista[2],lista[1]) < 2){
             medicao.setError(true);
         }//cenario 2
-        else if(suddenChanges(medicao,lista[2]) == 1 & !lista[2].isError() && suddenChanges(medicao,lista[1])== 1 & lista[1].isError()){
+        else if((suddenChanges(medicao,lista[2]) == 1 && lista[1].isError() ) || (suddenChanges(medicao,lista[1])== 1 && lista[2].isError())){
             medicao.setError(true);
         }//cenario 3
         else if(suddenChanges(medicao,lista[2],lista[1]) == 2 && previousErrors(lista[2],lista[1]) == 2 && suddenChanges(medicao,lista[0]) == 1 && !lista[0].isError()){
@@ -66,14 +71,18 @@ public class Fila {
         else if(suddenChanges(medicao,lista[2],lista[1]) == 0 && previousErrors(lista[2],lista[1]) == 2){
             lista[2].setError(false);
             lista[1].setError(false);
+            //FAZER A QUERY PARA APAGAR AS DUAS ULTIMAS ENTRADAS DA TABELA AVARIASENS0R
         }
     }
-    public void dealWithRemove(Medicao medicao){
+    public void dealWithRemove(Medicao medicao) throws SQLException {
+        SQLConLocal connection = IniReader.getSQLConLocal();
         if(medicao.isError()){
-            SQLConLocal connection = IniReader.getSQLConLocal();
-            getId(medicao,connection);
             insertIntoDB(medicao,connection);
+        }else{
+                connection.insertIntoDB(medicao);
+
         }
+            connection.closeConnection();
     }
 
     public Medicao removeFirst(){
@@ -90,31 +99,13 @@ public class Fila {
         Connection con = connection.getConnection();
         PreparedStatement statement = null;
         try {
-            String insertMedicao = "insert into estufa.avariasensor (Zona, IDSensor, Hora, Leitura, IDMedicao) values (?,?,?,?,?);";
+            String insertMedicao = "insert into estufa.avariasensor (Zona, IDSensor, Hora, Leitura) values (?,?,?,?);";
             statement = con.prepareStatement(insertMedicao);
             statement.setInt(1,medicao.getZone().getId());
             statement.setString(2,medicao.getSensor().getId());
             statement.setTimestamp(3,medicao.getTimestamp());
             statement.setDouble(4,medicao.getLeitura());
-            statement.setInt(5,medicao.getId());
             statement.execute();
-
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-    }
-
-    private void getId(Medicao medicao, SQLConLocal conLocal){
-        Connection con = conLocal.getConnection();
-        String queryGetID = "select IDMedicao from estufa.medicao where Zona = "+medicao.getZone().getId()+" and Leitura = "+medicao.getLeitura()+" and Idsensor = '"+medicao.getSensor().getId()+"' and Hora = '"+medicao.getTimestamp()+"';";
-        try {
-            Statement statement = con.createStatement();
-            ResultSet resultSet = statement.executeQuery(queryGetID);
-            resultSet.next();
-            int id = resultSet.getInt(1);
-            medicao.setId(id);
-
-
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
