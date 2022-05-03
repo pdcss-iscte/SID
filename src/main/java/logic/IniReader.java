@@ -25,7 +25,9 @@ public class IniReader {
         String sql_host = reader.get("SQL Connection Local", "host", String.class);
         String sql_port = reader.get("SQL Connection Local", "port", String.class);
         String sql_database_name = reader.get("SQL Connection Local", "database_name", String.class);
-        return new String[] {sql_host, sql_port, sql_database_name};
+        String user =  reader.get("SQL Connection Local", "user", String.class);
+        String pass =  reader.get("SQL Connection Local", "pass", String.class);
+        return new String[] {sql_host, sql_port, sql_database_name,user,pass};
     }
 
     private static String[] getSQLCloudFields() throws IOException {
@@ -112,13 +114,7 @@ public class IniReader {
             DB cloudDB = client.getDB(configFields[2]);
             DBCollection cloudCollection = cloudDB.getCollection(configFields[3]);
 
-            String[] sqlFields = getSQLLocalFields();
-            //String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] + "/" + sqlFields[2];
-            String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] ;
-            //automatizar
-            String user = "root";
-            String pass = "abc";
-            SQLConLocal sqlConLocal = new SQLConLocal(url,user, pass);
+            SQLConLocal sqlConLocal = getSQLConLocal();
 
             MongoConnector mongoConnector = new MongoConnector(localDatabase, cloudCollection,getPeriodicity(),sqlConLocal);
             mongoConnector.start();
@@ -136,11 +132,11 @@ public class IniReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] + "/" + sqlFields[2];
-        String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] ;
+        String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] + "/" + sqlFields[2];
+        //String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] ;
         //automatizar
-        String user = "root";
-        String pass = "abc";
+        String user = sqlFields[3];
+        String pass = sqlFields[4];
         return new SQLConLocal(url,user, pass);
 
     }
