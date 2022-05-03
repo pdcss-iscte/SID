@@ -2,6 +2,8 @@ package mqtt;
 
 import connectors.SQLConLocal;
 import logic.IniReader;
+import logic.Medicao;
+import logic.Util;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -38,7 +40,12 @@ public class MQTTReceiver extends Thread implements MqttCallback {
 
     @Override
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
-        conLocal.insertIntoDB(new JSONObject(new String(mqttMessage.getPayload())));
+        JSONObject object = new JSONObject(new String(mqttMessage.getPayload()));
+        if(Util.isValid(object)){
+            conLocal.insertIntoDB(Medicao.createMedicao(object));
+        }else{
+            conLocal.insertErrorIntoDB(object);
+        }
     }
 
     @Override

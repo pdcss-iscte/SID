@@ -77,12 +77,11 @@ public class Fila {
     public void dealWithRemove(Medicao medicao) throws SQLException {
         SQLConLocal connection = IniReader.getSQLConLocal();
         if(medicao.isError()){
-            insertIntoDB(medicao,connection);
+            connection.insertAvariaIntoDB(medicao);
         }else{
-                connection.insertIntoDB(medicao);
-
+            connection.insertIntoDB(medicao);
         }
-            connection.closeConnection();
+        connection.closeConnection();
     }
 
     public Medicao removeFirst(){
@@ -93,23 +92,6 @@ public class Fila {
         i = 2;
 
         return temp;
-    }
-
-    private void insertIntoDB(Medicao medicao, SQLConLocal connection) {
-        Connection con = connection.getConnection();
-        PreparedStatement statement = null;
-        try {
-            String insertMedicao = "insert into estufa.avariasensor (Zona, IDSensor, Hora, Leitura) values (?,?,?,?);";
-            statement = con.prepareStatement(insertMedicao);
-            statement.setInt(1,medicao.getZone().getId());
-            statement.setString(2,medicao.getSensor().getId());
-            statement.setTimestamp(3,medicao.getTimestamp());
-            statement.setDouble(4,medicao.getLeitura());
-            statement.execute();
-
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
     }
 
     public int getSize(){

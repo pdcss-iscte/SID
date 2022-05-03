@@ -7,6 +7,7 @@ import com.mongodb.MongoClientURI;
 import connectors.MongoConnector;
 import connectors.SQLConCLoud;
 import connectors.SQLConLocal;
+import mqtt.MQTTReceiver;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
@@ -29,7 +30,25 @@ public class IniReader {
         String sql_host = reader.get("SQL Connection Local", "host", String.class);
         String sql_port = reader.get("SQL Connection Local", "port", String.class);
         String sql_database_name = reader.get("SQL Connection Local", "database_name", String.class);
-        return new String[] {sql_host, sql_port, sql_database_name};
+        String user =  reader.get("SQL Connection Local", "user", String.class);
+        String pass =  reader.get("SQL Connection Local", "password", String.class);
+        return new String[] {sql_host, sql_port, sql_database_name,user,pass};
+    }
+
+    public static SQLConLocal getSQLConLocal(){
+
+        String[] sqlFields = new String[0];
+        SQLConLocal sqlConLocal = null;
+        try {
+            sqlFields = getSQLLocalFields();
+            String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] +"/"+sqlFields[2];
+            String user = sqlFields[3];
+            String pass =  sqlFields[4];
+            sqlConLocal = new SQLConLocal(url,user, pass);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sqlConLocal;
     }
 
     private static String[] getSQLCloudFields() throws IOException {
@@ -102,6 +121,9 @@ public class IniReader {
         try {
             startServers();
 
+            MQTTReceiver receiver = new MQTTReceiver(getSQLConLocal());
+            receiver.start();
+
             DB localDatabase = getLocalDatabase();
 
             String[] configFields = IniReader.getMongoCloudFields();
@@ -119,15 +141,8 @@ public class IniReader {
             DB cloudDB = client.getDB(configFields[2]);
             DBCollection cloudCollection = cloudDB.getCollection(configFields[3]);
 
-            String[] sqlFields = getSQLLocalFields();
-            //String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] + "/" + sqlFields[2];
-            String url = "jdbc:mysql://" + sqlFields[0] + ":" + sqlFields[1] ;
-            //automatizar
-            String user = "admin";
-            String pass = "admin";
-            SQLConLocal sqlConLocal = new SQLConLocal(url,user, pass);
 
-            MongoConnector mongoConnector = new MongoConnector(localDatabase, cloudCollection,getPeriodicity(),sqlConLocal);
+            MongoConnector mongoConnector = new MongoConnector(localDatabase, cloudCollection,getPeriodicity());
             mongoConnector.start();
         } catch (IOException e) {
             e.printStackTrace();

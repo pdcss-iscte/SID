@@ -2,6 +2,7 @@ package logic;
 
 import com.mongodb.DBObject;
 import connectors.SQLConCLoud;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -31,7 +32,7 @@ public class Util {
     }
 
 
-    public static boolean isValid(DBObject object){
+    public static boolean isValid(JSONObject object){
         SQLConCLoud connector = null;
         connector = SQLConCLoud.getInstance();
         String[] temp = object.toString().split(",");
