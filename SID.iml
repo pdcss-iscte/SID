@@ -16,5 +16,6 @@
     <orderEntry type="library" name="Maven: org.mongodb:mongo-java-driver:3.12.10" level="project" />
     <orderEntry type="library" name="Maven: org.json:json:20220320" level="project" />
     <orderEntry type="library" name="Maven: org.ini4j:ini4j:0.5.4" level="project" />
+    <orderEntry type="library" name="Maven: org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5" level="project" />
   </component>
 </module>

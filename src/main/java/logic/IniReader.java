@@ -7,10 +7,14 @@ import com.mongodb.MongoClientURI;
 import connectors.MongoConnector;
 import connectors.SQLConCLoud;
 import connectors.SQLConLocal;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.ini4j.Ini;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class IniReader {
 
@@ -93,7 +97,6 @@ public class IniReader {
         return periodicity;
     }
 
-
     public static void connectToMongos(){
 
         try {
@@ -133,4 +136,28 @@ public class IniReader {
 
     }
 
+    public static MqttClient getMQTTConnection() throws IOException {
+        Ini reader = IniReader.loadConfigFile();
+        String url = reader.get("MQTT Broker", "mqtt_server", String.class);
+        String topic = getMQTTTopic();
+        int randomID = ThreadLocalRandom.current().nextInt(0,1000+1);
+
+        try{
+            MqttClient client = new MqttClient(url,"Sql"+ topic+randomID, new MqttDefaultFilePersistence("/mqtt_cache"));
+            client.connect();
+            client.subscribe(topic);
+            return client;
+        }catch (MqttException e){
+            System.err.println("MQTT connection failed");
+        }
+        return null;
+    }
+
+    public static String getMQTTTopic() throws IOException {
+        Ini reader = IniReader.loadConfigFile();
+        return reader.get("MQTT Broker", "mqtt_topic", String.class);
+    }
+
 }
+
+

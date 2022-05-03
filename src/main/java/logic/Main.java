@@ -20,7 +20,6 @@ public class Main {
 
     public void run(){
         try {
-            System.err.println("adeus");
             list = new ArrayList<>();
             SQLConCLoud connector = IniReader.getSQLConCloud();
             zones = connector.getZones();

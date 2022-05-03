@@ -3,6 +3,7 @@ package connectors;
 import com.mongodb.*;
 import com.mongodb.util.JSON;
 import logic.Util;
+import mqtt.MQTTPublisher;
 import org.json.JSONObject;
 
 import java.time.Instant;
@@ -36,10 +37,9 @@ public class MongoConnector extends Thread {
 
     @Override
     public void run() {
-        while(i<20){
+        while(true){
             sendToSql();
             transfer();
-            i +=periodicity;
             try {
                 sleep(periodicity*1000);
             } catch (InterruptedException e) {
@@ -49,13 +49,8 @@ public class MongoConnector extends Thread {
     }
 
     public void transfer(){
-        //instant = logic.Util.getTime();
-        if(i<10)
-            instant = Instant.parse("2022-04-26T09:38:2"+i+"Z");
-        else {
-            int t = i-10;
-            instant = Instant.parse("2022-04-26T09:38:3" + t + "Z");
-        }
+        instant = logic.Util.getTime();
+
         BasicDBObject getQuery = new BasicDBObject();
         getQuery.put("Data", new BasicDBObject("$gte", Util.getTimeToString(Util.getTimeMinus(instant,periodicity))).append("$lt", Util.getTimeToString(instant)));
 
@@ -88,10 +83,11 @@ public class MongoConnector extends Thread {
         DBCollection tempCol = localDB.getCollection("temp");
         DBCursor cursor = tempCol.find();
         DBCollection measurementsCol = localDB.getCollection("measurement");
+        MQTTPublisher publisher = new MQTTPublisher();
 
         while (cursor.hasNext()){
             DBObject temp = cursor.next();
-            sqlConLocal.insertIntoDB(new JSONObject(JSON.serialize(temp)));
+            publisher.send(temp);
             measurementsCol.insert(temp);
             tempCol.remove(temp);
         }
