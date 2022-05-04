@@ -49,17 +49,7 @@ public class Main {
         }
         throw new IllegalArgumentException("Não existe um sensor valido atribuido á medição");
     }
-    /*
-        public Fila getFila(String id){
-            for (Fila fila: list){
-                if(id.equals(fila.getName())){
-                    return fila;
-                }
-            }
 
-            throw new IllegalArgumentException();
-        }
-    */
     public Zone getZone(int id){
         Zone zone = null;
         for(Zone z:zones){

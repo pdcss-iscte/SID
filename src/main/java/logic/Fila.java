@@ -79,6 +79,7 @@ public class Fila {
         if(medicao.isError()){
             connection.insertIntoAvaria(medicao);
         }else{
+
                 connection.insertIntoDB(medicao);
 
         }

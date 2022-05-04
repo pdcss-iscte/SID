@@ -24,7 +24,6 @@ public class MongoConnector extends Thread {
     private SQLConLocal sqlConLocal;
 
     private Instant instant;
-    private int i = 0;
 
     private int periodicity;
 
@@ -46,7 +45,6 @@ public class MongoConnector extends Thread {
             sendErrorToSQL();
             sendToSql();
             transfer();
-            i +=periodicity;
             try {
                 sleep(periodicity*1000);
             } catch (InterruptedException e) {
@@ -57,12 +55,6 @@ public class MongoConnector extends Thread {
 
     public void transfer(){
         instant = logic.Util.getTime();
-        /*if(i<10)
-            instant = Instant.parse("2022-04-26T09:38:2"+i+"Z");
-        else {
-            int t = i-10;
-            instant = Instant.parse("2022-04-26T09:38:3" + t + "Z");
-        }*/
         BasicDBObject getQuery = new BasicDBObject();
         getQuery.put("Data", new BasicDBObject("$gte", Util.getTimeToString(Util.getTimeMinus(instant,periodicity))).append("$lt", Util.getTimeToString(instant)));
 
@@ -80,11 +72,19 @@ public class MongoConnector extends Thread {
             DBObject temp = cursor.next();
 
             if(Util.isValid(temp)){
-                tempCol.insert(temp);
-                System.out.println("Inserted into Temp: " +temp.toString());
-
+                if(Util.isWithinRange(temp)) {
+                    tempCol.insert(temp);
+                    System.out.println("Inserted into Temp: " + temp.toString());
+                }else{
+                    Medicao medicao = null;
+                    try {
+                        medicao = Medicao.createMedicao(new JSONObject(JSON.serialize(temp)));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    sqlConLocal.insertIntoAvaria(medicao);
+                }
             }else{
-                //adaptar formato
                 sendErrorToMongo(temp,errorCol);
             }
         }
@@ -100,7 +100,7 @@ public class MongoConnector extends Thread {
 
             try {
                 Main.getINSTANCE().add(Medicao.createMedicao(new JSONObject(JSON.serialize(temp))));
-            } catch (SQLException throwables) {
+            } catch (Exception throwables ) {
                 sendErrorToMongo(temp,errorCol);
             }
             measurementsCol.insert(temp);

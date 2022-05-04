@@ -20,7 +20,7 @@ public class Medicao {
         this.leitura = leitura;
     }
 
-    public static Medicao createMedicao(JSONObject toInsert){
+    public static Medicao createMedicao(JSONObject toInsert) throws Exception{
         int id_zone = Integer.parseInt(String.valueOf(toInsert.get("Zona").toString().charAt(1)));
         String id_sensor = toInsert.get("Sensor").toString();
         double value = Double.parseDouble(toInsert.get("Medicao").toString());
