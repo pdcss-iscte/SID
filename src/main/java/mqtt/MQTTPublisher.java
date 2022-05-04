@@ -20,16 +20,20 @@ public class MQTTPublisher {
         try {
             mqttClient = IniReader.getMQTTConnection();
             topic = IniReader.getMQTTTopic();
+            System.out.println("publisher started");
         }catch(IOException e) {
             e.printStackTrace();
         }
     }
 
     public void send(DBObject toSend){
+
         MqttMessage message = new MqttMessage();
         message.setPayload(JSON.serialize(toSend).getBytes());
         try {
             mqttClient.publish(topic,message);
+            System.out.println(toSend);
+            System.out.println("message sent");
         } catch (MqttException e) {
             e.printStackTrace();
         }

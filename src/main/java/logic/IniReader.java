@@ -31,7 +31,7 @@ public class IniReader {
         String sql_port = reader.get("SQL Connection Local", "port", String.class);
         String sql_database_name = reader.get("SQL Connection Local", "database_name", String.class);
         String user =  reader.get("SQL Connection Local", "user", String.class);
-        String pass =  reader.get("SQL Connection Local", "password", String.class);
+        String pass =  reader.get("SQL Connection Local", "pass", String.class);
         return new String[] {sql_host, sql_port, sql_database_name,user,pass};
     }
 

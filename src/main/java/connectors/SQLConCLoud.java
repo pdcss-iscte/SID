@@ -99,8 +99,8 @@ public class SQLConCLoud extends SQLCon {
 
     public boolean isSensorPresent(String id){
         Connection connection = getConnection();
-        int idsensor = Integer.parseInt(String.valueOf(id.charAt(13)));
-        char tipo = id.charAt(12);
+        int idsensor = Integer.parseInt(String.valueOf(id.charAt(11)));
+        char tipo = id.charAt(10);
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT COUNT(1) from sid2022.sensor where idsensor ="+ idsensor+" and tipo = '"+tipo+"'");
@@ -119,7 +119,7 @@ public class SQLConCLoud extends SQLCon {
 
     public boolean isZonePresent( String id){
         Connection connection = getConnection();
-        int idzona = Integer.parseInt(String.valueOf(id.charAt(11)));
+        int idzona = Integer.parseInt(String.valueOf(id.charAt(10)));
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT COUNT(1) from sid2022.zona where idzona ="+idzona);

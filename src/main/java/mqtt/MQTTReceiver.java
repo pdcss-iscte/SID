@@ -11,6 +11,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class MQTTReceiver extends Thread implements MqttCallback {
 
@@ -27,6 +28,8 @@ public class MQTTReceiver extends Thread implements MqttCallback {
             client = IniReader.getMQTTConnection();
             assert client != null;
             client.setCallback(this);
+            System.out.println("receiver started");
+
         } catch (IOException e) {
             e.printStackTrace();
             client = null;
@@ -35,16 +38,22 @@ public class MQTTReceiver extends Thread implements MqttCallback {
 
     @Override
     public void connectionLost(Throwable throwable) {
-
+        throwable.printStackTrace();
     }
 
     @Override
-    public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
+    public void messageArrived(String s, MqttMessage mqttMessage) {
+        System.err.println("message arrived");
         JSONObject object = new JSONObject(new String(mqttMessage.getPayload()));
-        if(Util.isValid(object)){
-            conLocal.insertIntoDB(Medicao.createMedicao(object));
-        }else{
-            conLocal.insertErrorIntoDB(object);
+            Medicao temp = Medicao.createMedicao(object);
+        try {
+            if (Util.isValid(object)) {
+                conLocal.insertIntoDB(temp);
+            } else {
+                conLocal.insertErrorIntoDB(object);
+            }
+        }catch(SQLException e){
+            conLocal.insertAvariaIntoDB(temp);
         }
     }
 

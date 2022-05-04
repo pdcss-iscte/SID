@@ -36,7 +36,7 @@ public class Util {
         SQLConCLoud connector = null;
         connector = SQLConCLoud.getInstance();
         String[] temp = object.toString().split(",");
-        if(temp.length != 5 || !connector.isSensorPresent(temp[2]) || !connector.isZonePresent(temp[1])) return false;
+        if(temp.length != 5 || !connector.isSensorPresent(temp[3]) || !connector.isZonePresent(temp[0])) return false;
         return true;
 
     }
