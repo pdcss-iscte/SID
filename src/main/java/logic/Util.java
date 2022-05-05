@@ -47,7 +47,7 @@ public class Util {
         }
     }
 
-    public static boolean isWithinRange(DBObject object) {
+    public static boolean isWithinRange(DBObject object) {//adicionar ao mqtt
         Medicao medicao = null;
         try {
             medicao = Medicao.createMedicao(new JSONObject(JSON.serialize(object)));
