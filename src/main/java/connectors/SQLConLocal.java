@@ -20,7 +20,7 @@ public class SQLConLocal extends SQLCon{
     }
 
 
-    public void insertAvariaIntoDB(Medicao medicao) {
+    public void insertIntoAvaria(Medicao medicao) {
         Connection con = getConnection();
         PreparedStatement statement = null;
         try {

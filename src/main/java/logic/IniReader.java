@@ -142,7 +142,7 @@ public class IniReader {
             DBCollection cloudCollection = cloudDB.getCollection(configFields[3]);
 
 
-            MongoConnector mongoConnector = new MongoConnector(localDatabase, cloudCollection,getPeriodicity());
+            MongoConnector mongoConnector = new MongoConnector(localDatabase, cloudCollection,getPeriodicity(),getSQLConLocal());
             mongoConnector.start();
         } catch (IOException e) {
             e.printStackTrace();

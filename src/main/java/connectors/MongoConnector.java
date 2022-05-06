@@ -18,7 +18,7 @@ public class MongoConnector extends Thread {
 
     private DB localDB;
     private DBCollection cloudCollection;
-
+    private SQLConLocal sqlConLocal;
     private MQTTPublisher publisher;
 
     private Instant instant;
@@ -26,7 +26,8 @@ public class MongoConnector extends Thread {
     private int periodicity;
 
 
-    public MongoConnector(DB localDB, DBCollection cloudCollection,int periodicity){
+    public MongoConnector(DB localDB, DBCollection cloudCollection,int periodicity,SQLConLocal sqlConLocal){
+        this.sqlConLocal = sqlConLocal;
         this.publisher = new MQTTPublisher();
         this.cloudCollection = cloudCollection;
         this.localDB = localDB;
@@ -66,9 +67,34 @@ public class MongoConnector extends Thread {
 
         while(cursor.hasNext()) {
             DBObject temp = cursor.next();
-            tempCol.insert(temp);
-
+            if(Util.isValid(new JSONObject(JSON.serialize(temp)))){
+                if(Util.isWithinRange(temp)) {
+                    tempCol.insert(temp);
+                    System.out.println("Inserted into Temp: " + temp.toString());
+                }else{
+                    Medicao medicao = null;
+                    medicao = Medicao.createMedicao(new JSONObject(JSON.serialize(temp)));
+                    sqlConLocal.insertIntoAvaria(medicao);
+                }
+            }else{
+                sendErrorToMongo(temp);
+            }
         }
+    }
+
+    public void sendErrorToMongo(DBObject temp){
+        DBObject document = new BasicDBObject();
+        document.put("error",temp);
+        document.put("timestamp",Util.getTimeToString(Util.getTime()));
+        document.put("sent", false);
+        try {
+            sqlConLocal.insertErrorIntoDB(new JSONObject(JSON.serialize(temp)));
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        System.err.println("Inserted into Error: "+ temp.toString());
+
+
     }
 
     public void sendToMQTT(){

@@ -2,6 +2,7 @@ package mqtt;
 
 import connectors.SQLConLocal;
 import logic.IniReader;
+import logic.Main;
 import logic.Medicao;
 import logic.Util;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -48,12 +49,11 @@ public class MQTTReceiver extends Thread implements MqttCallback {
             Medicao temp = Medicao.createMedicao(object);
         try {
             if (Util.isValid(object)) {
-                conLocal.insertIntoDB(temp);
+                Main.getINSTANCE().add(temp);
             } else {
                 conLocal.insertErrorIntoDB(object);
             }
         }catch(SQLException e){
-            conLocal.insertAvariaIntoDB(temp);
         }
     }
 

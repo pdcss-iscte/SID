@@ -77,7 +77,7 @@ public class Fila {
     public void dealWithRemove(Medicao medicao) throws SQLException {
         SQLConLocal connection = IniReader.getSQLConLocal();
         if(medicao.isError()){
-            connection.insertAvariaIntoDB(medicao);
+            connection.insertIntoAvaria(medicao);
         }else{
             connection.insertIntoDB(medicao);
         }

@@ -1,6 +1,7 @@
 package logic;
 
 import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 import connectors.SQLConCLoud;
 import org.json.JSONObject;
 
@@ -32,13 +33,35 @@ public class Util {
     }
 
 
-    public static boolean isValid(JSONObject object){
-        SQLConCLoud connector = null;
-        connector = SQLConCLoud.getInstance();
-        String[] temp = object.toString().split(",");
-        if(temp.length != 5 || !connector.isSensorPresent(temp[3]) || !connector.isZonePresent(temp[0])) return false;
-        return true;
 
+    public static boolean isValid(JSONObject object){
+
+        SQLConCLoud connector = SQLConCLoud.getInstance();
+        Medicao medicao;
+        try {
+            medicao=Medicao.createMedicao(object);
+            if (!connector.isSensorPresent(medicao.getSensor()) || !connector.isZonePresent(medicao.getZone().getId()))
+                return false;
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    public static boolean isWithinRange(DBObject object) {//adicionar ao mqtt
+        Medicao medicao = null;
+        try {
+            medicao = Medicao.createMedicao(new JSONObject(JSON.serialize(object)));
+            Sensor sensor = Main.getINSTANCE().getSensor(medicao.getSensor().getId());
+            double value = medicao.getLeitura();
+            if (value < sensor.getInfLimit() || value > sensor.getUpperLimit()) {
+                return false;
+            } else
+                return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
 }
