@@ -1,9 +1,10 @@
 package logic;
 
+import com.mongodb.internal.connection.Time;
 import org.json.JSONObject;
 
-import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.temporal.ChronoUnit;
 
 public class Medicao {
 
@@ -16,7 +17,8 @@ public class Medicao {
     public Medicao(Zone zone, Sensor sensor, Timestamp timestamp, double leitura) {
         this.zone = zone;
         this.sensor = sensor;
-        this.timestamp = timestamp;
+        this.timestamp = Timestamp.from(timestamp.toInstant().plus(1, ChronoUnit.HOURS));
+
         this.leitura = leitura;
     }
 

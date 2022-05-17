@@ -108,7 +108,7 @@ public class IniReader {
             } else {
                 uri = "mongodb://" + configFields[0] + ":" + configFields[1];
             }
-
+            System.out.println(uri);
             MongoClient client = new MongoClient(new MongoClientURI(uri));
 
             DB cloudDB = client.getDB(configFields[2]);

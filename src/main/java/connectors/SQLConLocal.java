@@ -32,7 +32,7 @@ public class SQLConLocal extends SQLCon{
             statement.execute();
 
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+
         }
     }
 
@@ -54,17 +54,24 @@ public class SQLConLocal extends SQLCon{
 
     }
 
-    public void insertIntoDB(Medicao medicao) throws SQLException {
+    public void insertIntoDB(Medicao medicao)  {
         PreparedStatement statement = null;
 
 
             String query = "INSERT INTO medicao (Zona,IDSensor,Hora,Leitura) VALUES (?, ?, ?, ?)";
 
+        try {
             statement = getConnection().prepareStatement(query);
             statement.setInt(1,medicao.getZone().getId());
             statement.setString(2,medicao.getSensor().getId());
             statement.setTimestamp(3, medicao.getTimestamp());
             statement.setDouble(4,medicao.getLeitura());
             statement.execute();
+        } catch (SQLException throwables) {
+            System.err.println(statement.toString());
+            throwables.printStackTrace();
+        }
+
+
     }
 }

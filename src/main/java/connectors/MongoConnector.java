@@ -101,6 +101,7 @@ public class MongoConnector extends Thread {
             try {
                 Main.getINSTANCE().add(Medicao.createMedicao(new JSONObject(JSON.serialize(temp))));
             } catch (Exception throwables ) {
+                System.out.println("nao enviei");
                 sendErrorToMongo(temp,errorCol);
             }
             measurementsCol.insert(temp);
